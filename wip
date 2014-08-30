@@ -57,6 +57,7 @@ function main() {
 }
 
 function wip_ls() {
+  _sort
   echo "WIPs:"
   cat $WIP_PATH
 }
@@ -65,14 +66,12 @@ function wip_add() {
   if ! grep "$BASE" $WIP_PATH ; then
     echo "$BASE" >> $WIP_PATH
   fi
-  _sort
 }
 
 function wip_rm() {
   cat $WIP_PATH | awk "\$0 != \"$BASE\"" > $WIP_TMP
   cat $WIP_TMP > $WIP_PATH
   rm -f $WIP_TMP
-  _sort
 }
 
 function _sort() {
