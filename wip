@@ -1,0 +1,88 @@
+#!/bin/bash
+
+set -e
+
+# GLOBALS
+readonly WIP_PATH="$HOME/.wip"
+readonly WIP_TMP="$HOME/.wip.tmp"
+readonly CMD_LS="ls"
+readonly CMD_ADD="add"
+readonly CMD_RM="rm"
+readonly CURRENT="$(pwd -P)"
+readonly BASE="$(basename $CURRENT)"
+
+# USAGE
+function usage() {
+  cat <<USAGE >&2
+
+  Usage: wip <command>
+
+  Commands:
+  -h/--help  -  show this message
+  ls         -  list
+  add        -  add current
+  rm         -  remove current
+USAGE
+}
+
+##### MAIN
+function main() {
+  touch $WIP_PATH
+  local exit_status=0
+  local command="$1"
+  shift
+
+  if [[ -z $command ]] ; then
+    exit_status=1
+  fi
+
+  case $command in
+    -h|--help)
+      usage
+      exit_status=1
+      ;;
+    $CMD_LS)
+      wip_ls
+      ;;
+    $CMD_ADD|$CMD_RM)
+      wip_${command} "$@"
+      wip_ls
+      ;;
+    *)
+      usage
+      ;;
+  esac
+
+  exit $exit_status
+}
+
+function wip_ls() {
+  echo "WIPs:"
+  cat $WIP_PATH
+}
+
+function wip_add() {
+  if ! grep "$BASE" $WIP_PATH ; then
+    echo "$BASE" >> $WIP_PATH
+  fi
+  _sort
+}
+
+function wip_rm() {
+  cat $WIP_PATH | awk "\$0 != \"$BASE\"" > $WIP_TMP
+  cat $WIP_TMP > $WIP_PATH
+  rm -f $WIP_TMP
+  _sort
+}
+
+function _sort() {
+  cat $WIP_PATH > $WIP_TMP
+  cat $WIP_TMP | sort > $WIP_PATH
+  rm -f $WIP_TMP
+}
+
+function wip_clear() {
+  : use __git_ps1
+}
+
+main "$@"
