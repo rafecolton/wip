@@ -11,56 +11,54 @@ readonly CMD_RM="rm"
 readonly CURRENT="$(pwd -P)"
 readonly BASE="$(basename $CURRENT)"
 
-# USAGE
-function usage() {
+# set signal trap
+trap "rm -f $WIP_TMP" EXIT SIGINT SIGTERM
+
+usage() {
   cat <<USAGE >&2
 
-  Usage: wip <command>
+Usage: wip <command>
 
-  Commands:
-  -h/--help  -  show this message
-  ls         -  list
-  add        -  add current
-  rm         -  remove current
+Commands:
+-h/--help  -  show this message
+ls         -  list
+add        -  add current
+rm         -  remove current
 USAGE
 }
 
-##### MAIN
-function main() {
+main() {
+
   touch $WIP_PATH
   local exit_status=0
   local command="$1"
   shift
 
-  if [[ -z $command ]] ; then
-    exit_status=1
+  if [[ -z $command ]] || [[ "$command" =~ -h|--help ]] ; then
+    exit 1
   fi
 
-  case $command in
-    -h|--help)
-      usage
-      exit_status=1
-      ;;
-    $CMD_LS)
-      wip_ls
-      ;;
-    $CMD_ADD|$CMD_RM)
-      wip_${command} "$@"
-      wip_ls
-      ;;
-    *)
-      usage
-      ;;
-  esac
+  if ! type "wip_${command}" >/dev/null 2>&1 ; then
+    usage
+    exit 2
+  fi
 
-  exit $exit_status
+  eval "wip_${command}"
 }
 
 function wip_ls() {
   _sort
-  echo "WIPs:"
+  echo -e "\nWIPs:"
   cat $WIP_PATH
+  echo
 }
+
+_sort() {
+  cat $WIP_PATH > $WIP_TMP
+  cat $WIP_TMP | sort > $WIP_PATH
+  rm -f $WIP_TMP
+}
+
 
 function wip_add() {
   if ! grep "$BASE" $WIP_PATH ; then
@@ -68,20 +66,11 @@ function wip_add() {
   fi
 }
 
+
 function wip_rm() {
   cat $WIP_PATH | awk "\$0 != \"$BASE\"" > $WIP_TMP
   cat $WIP_TMP > $WIP_PATH
   rm -f $WIP_TMP
-}
-
-function _sort() {
-  cat $WIP_PATH > $WIP_TMP
-  cat $WIP_TMP | sort > $WIP_PATH
-  rm -f $WIP_TMP
-}
-
-function wip_clear() {
-  : use __git_ps1
 }
 
 main "$@"
