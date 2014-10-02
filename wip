@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -e
+set -o errexit
+set -o pipefail
 
 # GLOBALS
 readonly WIP_PATH="$HOME/.wip"
@@ -59,13 +60,11 @@ _sort() {
   rm -f $WIP_TMP
 }
 
-
 function wip_add() {
   if ! grep "$BASE" $WIP_PATH ; then
     echo "$BASE" >> $WIP_PATH
   fi
 }
-
 
 function wip_rm() {
   cat $WIP_PATH | awk "\$0 != \"$BASE\"" > $WIP_TMP
