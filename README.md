@@ -32,6 +32,7 @@ $ wip -h
 * tests using bats and `.travis.yml`
 * `add` and `rm` by name
 * `clear`
+* display which branch each project is on if it's a git repo
 
 ## Ideas
 
