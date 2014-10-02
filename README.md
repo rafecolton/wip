@@ -9,6 +9,13 @@ keeps track of your wip projects
 * no dependencies
 * just bash
 
+## Installing
+
+```bash
+curl -sL https://raw.githubusercontent.com/rafecolton/wip/master/wip \
+  -o /usr/local/bin/wip && chmod +x /usr/local/bin/wip
+```
+
 ## Usage
 
 ```bash
